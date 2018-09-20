@@ -51,6 +51,15 @@ func (t *T) CheckError(actual error, expected interface{}) bool {
 	return !hadError
 }
 
+func (t *T) Nil(actual interface{}) bool {
+	helper(t).Helper()
+	if actual != nil {
+		t.Errorf("%s: should be nil, not %v", t.Name, actual)
+		return false
+	}
+	return true
+}
+
 func (t *T) NotNil(actual interface{}) bool {
 	helper(t).Helper()
 	if actual == nil {
