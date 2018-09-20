@@ -1,6 +1,7 @@
 package assert
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -94,7 +95,11 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 		cmpopts.EquateEmpty(),
 	)
 	if !cmp.Equal(actual, expected, opts...) {
-		diff := cmp.Diff(actual, expected, opts...)
+		diff := fmt.Sprintf("expected %s\ngot %s\n", spew.Sdump(expected), spew.Sdump(actual))
+		if len(diff) > 200 {
+			// Try to get a shorter diff that will be more readable
+			diff = cmp.Diff(actual, expected, opts...)
+		}
 		t.Errorf("%s: differs: (-got +want)\n%s", t.Name, diff)
 		return false
 	}
