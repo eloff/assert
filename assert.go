@@ -118,6 +118,7 @@ func (t *T) Panics(f func(), msgContains string) bool {
 			t.Errorf("panic message %q does not contain %q", shortStr(msg), shortStr(msgContains))
 			return false
 		}
+		return true
 	} else {
 		t.Error("expected function to panic")
 		return false
