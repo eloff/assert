@@ -93,8 +93,8 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 	opts = append(opts,
 		cmpopts.EquateEmpty(),
 	)
-	diff := cmp.Diff(actual, expected, opts...)
-	if diff != "" {
+	if !cmp.Equal(actual, expected, opts...) {
+		diff := cmp.Diff(actual, expected, opts...)
 		t.Errorf("%s: differs: (-got +want)\n%s", t.Name, diff)
 		return false
 	}
