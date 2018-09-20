@@ -104,7 +104,7 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 func (t *T) Contains(haystack, needle string) bool {
 	helper(t).Helper()
 	if !strings.Contains(haystack, needle) {
-		t.Errorf("%s does not contain %s", shortStr(haystack), shortStr(needle))
+		t.Errorf("%q does not contain %q", shortStr(haystack), shortStr(needle))
 		return false
 	}
 	return true
@@ -114,7 +114,10 @@ func (t *T) Panics(f func(), msgContains string) bool {
 	helper(t).Helper()
 
 	if msg, ok := checkPanics(f); ok {
-		return t.Contains(msg, msgContains)
+		if !strings.Contains(msg, msgContains) {
+			t.Errorf("panic message %q does not contain %q", shortStr(msg), shortStr(msgContains))
+			return false
+		}
 	} else {
 		t.Error("expected function to panic")
 		return false
