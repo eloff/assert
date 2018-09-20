@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var ShortStringLength = 50
+
 type tHelper interface {
 	Helper()
 }
@@ -61,4 +63,25 @@ func helper(t *T) tHelper {
 		return h
 	}
 	return noopHelper{}
+}
+
+func checkPanics(f func()) (msg string, ok bool) {
+	defer func() {
+		message := recover()
+		if message != nil {
+			ok = true
+			msg, _ = message.(string)
+		}
+	}()
+	// Call function that may panic
+	f()
+	return
+}
+
+func shortStr(s string) string {
+	if len(s) > ShortStringLength {
+		cutoff := ShortStringLength / 2
+		return s[:cutoff] + "..." + s[len(s)-cutoff:]
+	}
+	return s
 }
