@@ -19,9 +19,14 @@ type T struct {
 
 func New(t *testing.T, name string) *T {
 	callerName := getCallerName()
+	if name == "" {
+		name = callerName
+	} else {
+		name = callerName + ": " + name
+	}
 	return &T{
 		T:    t,
-		Name: callerName + ": " + name,
+		Name: name,
 	}
 }
 
