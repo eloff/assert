@@ -13,7 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-func (t *T) CheckError(actual error, expected interface{}) bool {
+func (t *T) ErrorEquals(actual error, expected interface{}) {
 	helper(t).Helper()
 	hadError := actual != nil
 	switch val := expected.(type) {
@@ -45,35 +45,30 @@ func (t *T) CheckError(actual error, expected interface{}) bool {
 			t.Fatalf("%s: unexpected error %+v", t.Name(), actual)
 		}
 	default:
-		panic("fatal error: expected must be an error or a string or nil")
+		t.Fatalf("ErrorEquals: expected must be an error or a string or nil")
 	}
-	return !hadError
 }
 
-func (t *T) Nil(actual interface{}) bool {
+func (t *T) Nil(actual interface{}) {
 	helper(t).Helper()
 	if actual != nil {
 		t.Fatalf("%s: should be nil, not %v", t.Name(), actual)
-		return false
 	}
-	return true
 }
 
-func (t *T) NotNil(actual interface{}) bool {
+func (t *T) NotNil(actual interface{}) {
 	helper(t).Helper()
 	if actual == nil {
 		t.Fatalf("%s: should not be nil", t.Name())
-		return false
 	}
-	return true
 }
 
-func (t *T) Len(actual interface{}, length int) bool {
+func (t *T) Len(actual interface{}, length int) {
 	helper(t).Helper()
-	return t.Equal(length, reflect.ValueOf(actual).Len())
+	t.Equal(length, reflect.ValueOf(actual).Len())
 }
 
-func (t *T) NotEqual(expected, actual interface{}, opts ...cmp.Option) bool {
+func (t *T) NotEqual(expected, actual interface{}, opts ...cmp.Option) {
 	helper(t).Helper()
 	// Add special flags for comparing structs from this service
 	opts = append(opts,
@@ -81,12 +76,10 @@ func (t *T) NotEqual(expected, actual interface{}, opts ...cmp.Option) bool {
 	)
 	if cmp.Equal(actual, expected, opts...) {
 		t.Fatalf("%s: actual equals expected:\n%s", t.Name(), spew.Sdump(expected))
-		return false
 	}
-	return true
 }
 
-func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
+func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) {
 	helper(t).Helper()
 	// Add special flags for comparing structs from this service
 	opts = append(opts,
@@ -98,32 +91,25 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 			diff = cmp.Diff(actual, expected, opts...)
 		}
 		t.Fatalf("%s: differs: (-got +want)\n%s", t.Name(), diff)
-		return false
 	}
-	return true
 }
 
-func (t *T) Contains(haystack, needle string) bool {
+func (t *T) Contains(haystack, needle string) {
 	helper(t).Helper()
 	if !strings.Contains(haystack, needle) {
 		t.Fatalf("%q does not contain %q", shortStr(haystack), shortStr(needle))
-		return false
 	}
-	return true
 }
 
-func (t *T) Panics(f func(), msgContains string) bool {
+func (t *T) Panics(f func(), msgContains string) {
 	helper(t).Helper()
 
 	if msg, ok := checkPanics(f); ok {
 		if !strings.Contains(msg, msgContains) {
 			t.Fatalf("panic message %q does not contain %q", shortStr(msg), shortStr(msgContains))
-			return false
 		}
-		return true
 	} else {
 		t.Fatalf("expected function %s to panic", functionName(f))
-		return false
 	}
 }
 
