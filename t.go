@@ -14,10 +14,14 @@ type tHelper interface {
 
 type T struct {
 	*testing.T
-	Name string
+	name     string
+	testName string
 }
 
-func New(t *testing.T, name string) *T {
+func new(t *testing.T, name string, parallel bool) *T {
+	if parallel {
+		t.Parallel()
+	}
 	callerName := getCallerName()
 	if name == "" {
 		name = callerName
@@ -26,8 +30,27 @@ func New(t *testing.T, name string) *T {
 	}
 	return &T{
 		T:    t,
-		Name: name,
+		name: name,
 	}
+}
+
+func New(t *testing.T, name string) *T {
+	return new(t, name, true)
+}
+
+func NewSerial(t *testing.T, name string) *T {
+	return new(t, name, false)
+}
+
+func (t *T) SetName(name string) {
+	t.testName = name
+}
+
+func (t *T) Name() string {
+	if t.testName == "" {
+		return t.name
+	}
+	return t.name + ": " + t.testName
 }
 
 func getCallerName() string {
