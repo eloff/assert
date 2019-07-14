@@ -4,8 +4,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var ShortStringLength = 50
@@ -16,16 +14,14 @@ type tHelper interface {
 
 type T struct {
 	*testing.T
-	assertions *assert.Assertions
-	Name       string
+	Name string
 }
 
 func New(t *testing.T, name string) *T {
 	callerName := getCallerName()
 	return &T{
-		T:          t,
-		assertions: assert.New(t),
-		Name:       callerName + ": " + name,
+		T:    t,
+		Name: callerName + ": " + name,
 	}
 }
 

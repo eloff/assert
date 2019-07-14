@@ -3,6 +3,7 @@ package assert
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
@@ -18,30 +19,30 @@ func (t *T) CheckError(actual error, expected interface{}) bool {
 	switch val := expected.(type) {
 	case nil:
 		if hadError {
-			t.T.Errorf("%s: unexpected error %+v", t.Name, actual)
+			t.Fatalf("%s: unexpected error %+v", t.Name, actual)
 		}
 	case bool:
 		if val {
 			if !hadError {
-				t.T.Errorf("%s: expected an error, but call succeeded", t.Name)
+				t.Fatalf("%s: expected an error, but call succeeded", t.Name)
 			}
 		} else if hadError {
-			t.T.Errorf("%s: unexpected error %+v", t.Name, actual)
+			t.Fatalf("%s: unexpected error %+v", t.Name, actual)
 		}
 	case error:
 		cause := errors.Cause(actual)
 		if cause.Error() != val.Error() {
-			t.T.Errorf("%s: expected error %s but got %+v", t.Name, val.Error(), actual)
+			t.Fatalf("%s: expected error %s but got %+v", t.Name, val.Error(), actual)
 		}
 	case string:
 		if val != "" {
 			if !hadError {
-				t.T.Errorf("%s: expected an error containing %s, but call succeeded", t.Name, val)
+				t.Fatalf("%s: expected an error containing %s, but call succeeded", t.Name, val)
 			} else if !strings.Contains(actual.Error(), val) {
-				t.T.Errorf("%s: expected an error containing %s, but got %+v", t.Name, val, actual)
+				t.Fatalf("%s: expected an error containing %s, but got %+v", t.Name, val, actual)
 			}
 		} else if hadError {
-			t.T.Errorf("%s: unexpected error %+v", t.Name, actual)
+			t.Fatalf("%s: unexpected error %+v", t.Name, actual)
 		}
 	default:
 		panic("fatal error: expected must be an error or a string or nil")
@@ -52,7 +53,7 @@ func (t *T) CheckError(actual error, expected interface{}) bool {
 func (t *T) Nil(actual interface{}) bool {
 	helper(t).Helper()
 	if actual != nil {
-		t.Errorf("%s: should be nil, not %v", t.Name, actual)
+		t.Fatalf("%s: should be nil, not %v", t.Name, actual)
 		return false
 	}
 	return true
@@ -61,7 +62,7 @@ func (t *T) Nil(actual interface{}) bool {
 func (t *T) NotNil(actual interface{}) bool {
 	helper(t).Helper()
 	if actual == nil {
-		t.Errorf("%s: should not be nil", t.Name)
+		t.Fatalf("%s: should not be nil", t.Name)
 		return false
 	}
 	return true
@@ -79,7 +80,7 @@ func (t *T) NotEqual(expected, actual interface{}, opts ...cmp.Option) bool {
 		cmpopts.EquateEmpty(),
 	)
 	if cmp.Equal(actual, expected, opts...) {
-		t.Errorf("%s: actual equals expected:\n%s", t.Name, spew.Sdump(expected))
+		t.Fatalf("%s: actual equals expected:\n%s", t.Name, spew.Sdump(expected))
 		return false
 	}
 	return true
@@ -96,7 +97,7 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 		if len(diff) > 200 {
 			diff = cmp.Diff(actual, expected, opts...)
 		}
-		t.Errorf("%s: differs: (-got +want)\n%s", t.Name, diff)
+		t.Fatalf("%s: differs: (-got +want)\n%s", t.Name, diff)
 		return false
 	}
 	return true
@@ -105,7 +106,7 @@ func (t *T) Equal(expected, actual interface{}, opts ...cmp.Option) bool {
 func (t *T) Contains(haystack, needle string) bool {
 	helper(t).Helper()
 	if !strings.Contains(haystack, needle) {
-		t.Errorf("%q does not contain %q", shortStr(haystack), shortStr(needle))
+		t.Fatalf("%q does not contain %q", shortStr(haystack), shortStr(needle))
 		return false
 	}
 	return true
@@ -116,12 +117,25 @@ func (t *T) Panics(f func(), msgContains string) bool {
 
 	if msg, ok := checkPanics(f); ok {
 		if !strings.Contains(msg, msgContains) {
-			t.Errorf("panic message %q does not contain %q", shortStr(msg), shortStr(msgContains))
+			t.Fatalf("panic message %q does not contain %q", shortStr(msg), shortStr(msgContains))
 			return false
 		}
 		return true
 	} else {
-		t.Error("expected function to panic")
+		t.Fatalf("expected function %s to panic", functionName(f))
 		return false
 	}
+}
+
+func functionName(f interface{}) string {
+	funcValue := reflect.ValueOf(f)
+	if funcValue.Kind() != reflect.Func {
+		return fmt.Sprintf("%v is not a function", f)
+	}
+	// panics if f's Kind is not Chan, Func, Map, Ptr, Slice, or UnsafePointer.
+	funcPointer := funcValue.Pointer()
+	if runtimeFunc := runtime.FuncForPC(funcPointer); runtimeFunc != nil {
+		return runtimeFunc.Name()
+	}
+	return "nil function"
 }
