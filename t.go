@@ -1,6 +1,7 @@
 package assert
 
 import (
+	"fmt"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -44,6 +45,10 @@ func NewSerial(t *testing.T, name string) *T {
 
 func (t *T) SetName(name string) {
 	t.testName = name
+}
+
+func (t *T) SetIndex(i int) {
+	t.testName = fmt.Sprintf("tests[%d]", i)
 }
 
 func (t *T) Name() string {
