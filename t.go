@@ -23,11 +23,8 @@ func new(t *testing.T, name string, parallel bool) *T {
 	if parallel {
 		t.Parallel()
 	}
-	callerName := getCallerName()
 	if name == "" {
-		name = callerName
-	} else {
-		name = callerName + ": " + name
+		name = getCallerName()
 	}
 	return &T{
 		T:    t,
@@ -60,8 +57,8 @@ func (t *T) Name() string {
 
 func getCallerName() string {
 	fpcs := make([]uintptr, 1)
-	// Skip 3 levels to get the test function
-	n := runtime.Callers(3, fpcs)
+	// Skip 4 levels to get the test function
+	n := runtime.Callers(4, fpcs)
 	if n == 0 {
 		return ""
 	}
