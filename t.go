@@ -15,8 +15,7 @@ type tHelper interface {
 
 type T struct {
 	*testing.T
-	name     string
-	testName string
+	name string
 }
 
 func new(t *testing.T, name string, parallel bool) *T {
@@ -41,18 +40,15 @@ func NewSerial(t *testing.T, name string) *T {
 }
 
 func (t *T) SetName(name string) {
-	t.testName = name
+	t.name = name
 }
 
 func (t *T) SetIndex(i int) {
-	t.testName = fmt.Sprintf("tests[%d]", i)
+	t.name = fmt.Sprintf("tests[%d]", i)
 }
 
 func (t *T) Name() string {
-	if t.testName == "" {
-		return t.name
-	}
-	return t.name + ": " + t.testName
+	return t.name
 }
 
 func getCallerName() string {
