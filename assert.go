@@ -51,14 +51,14 @@ func (t *T) ErrorEquals(actual error, expected interface{}) {
 
 func (t *T) Nil(actual interface{}) {
 	helper(t).Helper()
-	if actual != nil || !reflect.ValueOf(actual).IsNil() {
+	if actual != nil && !reflect.ValueOf(actual).IsNil() {
 		t.Fatalf("%s: should be nil, not %v", t.Name(), actual)
 	}
 }
 
 func (t *T) NotNil(actual interface{}) {
 	helper(t).Helper()
-	if actual == nil && reflect.ValueOf(actual).IsNil() {
+	if actual == nil || reflect.ValueOf(actual).IsNil() {
 		t.Fatalf("%s: should not be nil", t.Name())
 	}
 }
