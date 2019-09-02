@@ -18,25 +18,22 @@ type T struct {
 	name string
 }
 
-func new(t *testing.T, name string, parallel bool) *T {
+func new(t *testing.T, parallel bool) *T {
 	if parallel {
 		t.Parallel()
 	}
-	if name == "" {
-		name = getCallerName()
-	}
 	return &T{
 		T:    t,
-		name: name,
+		name: getCallerName(),
 	}
 }
 
-func New(t *testing.T, name string) *T {
-	return new(t, name, true)
+func New(t *testing.T) *T {
+	return new(t, true)
 }
 
-func NewSerial(t *testing.T, name string) *T {
-	return new(t, name, false)
+func NewSerial(t *testing.T) *T {
+	return new(t, false)
 }
 
 func (t *T) SetName(name string) {
